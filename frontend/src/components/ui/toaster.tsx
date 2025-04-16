@@ -1,35 +1,21 @@
 "use client"
 
-import {
-  Toast,
-  ToastClose,
-  ToastDescription,
-  ToastProvider,
-  ToastTitle,
-  ToastViewport,
-} from "@/components/ui/toast"
-import { useToast } from "@/components/ui/use-toast"
+// Using Sonner for toast notifications instead of shadcn/ui toast
+import { Toaster as SonnerToaster } from 'sonner';
 
 export function Toaster() {
-  const { toasts } = useToast()
-
   return (
-    <ToastProvider>
-      {toasts.map(function ({ id, title, description, action, ...props }) {
-        return (
-          <Toast key={id} {...props}>
-            <div className="grid gap-1">
-              {title && <ToastTitle>{title}</ToastTitle>}
-              {description && (
-                <ToastDescription>{description}</ToastDescription>
-              )}
-            </div>
-            {action}
-            <ToastClose />
-          </Toast>
-        )
-      })}
-      <ToastViewport />
-    </ToastProvider>
-  )
+    <SonnerToaster 
+      position="top-right"
+      toastOptions={{
+        duration: 4000,
+        className: 'rounded-md shadow-md',
+        style: {
+          background: 'white',
+          color: 'black',
+          border: '1px solid #e2e8f0',
+        },
+      }}
+    />
+  );
 } 

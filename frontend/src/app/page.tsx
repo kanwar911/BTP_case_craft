@@ -10,245 +10,143 @@ import { formatPrice } from '@/lib/utils';
 import { ArrowRight, ShoppingCart } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
 import type { Product } from '@/types';
+import ProductGrid from '@/components/ProductGrid';
+import { toast } from 'sonner';
 
 export default function HomePage() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { toast } = useToast();
+  const { toast: useToastToast } = useToast();
   const { addItem } = useCart();
 
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
       try {
         setIsLoading(true);
-        // In a real app, you might have an API endpoint for featured products
-        // Here we're just getting a few random products
-        const products = await getProducts();
-        // Get up to 4 random products
-        const randomProducts = products
-          .sort(() => 0.5 - Math.random())
-          .slice(0, 4);
-        setFeaturedProducts(randomProducts);
+        const data = await getProducts({ featured: true, limit: 4 });
+        setFeaturedProducts(data);
       } catch (error) {
         console.error('Failed to fetch featured products:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to load featured products. Please try again later.',
-          variant: 'destructive',
-        });
+        toast.error('Failed to load featured products');
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchFeaturedProducts();
-  }, [toast]);
+  }, []);
 
   const handleAddToCart = (product: Product) => {
     addItem(product);
-    toast({
-      title: 'Added to cart',
-      description: `${product.name} has been added to your cart.`,
-    });
+    toast.success(`${product.name} added to cart`);
   };
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
-      <section className="relative bg-gray-900 text-white">
-        <div className="absolute inset-0 z-0 overflow-hidden">
-          <Image
-            src="/images/hero.jpg"
-            alt="Hero Background"
-            fill
-            priority
-            className="object-cover opacity-40"
-          />
-        </div>
-        <div className="container relative z-10 mx-auto px-4 py-32 sm:px-6 lg:flex lg:items-center lg:px-8">
-          <div className="max-w-3xl">
-            <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl">
-              <span className="block">Premium Phone Cases</span>
-              <span className="block text-indigo-400">For Every Style</span>
+      <section className="relative bg-gradient-to-r from-primary/90 to-primary h-[500px] md:h-[600px] flex items-center">
+        <div className="container mx-auto px-4 z-10 relative">
+          <div className="max-w-2xl">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
+              Premium Phone Cases & Accessories
             </h1>
-            <p className="mt-6 max-w-xl text-lg text-gray-300">
-              Discover our collection of stylish and durable phone cases designed to protect your
-              device while expressing your unique personality.
+            <p className="text-lg md:text-xl text-white/90 mb-8">
+              Discover our collection of stylish and durable phone cases and accessories.
+              Protect your device with style!
             </p>
-            <div className="mt-10 flex items-center gap-x-6">
-              <Link href="/products">
-                <Button size="lg" className="px-8">
-                  Shop Now
-                </Button>
-              </Link>
-              <Link
-                href="/about"
-                className="flex items-center text-sm font-semibold text-white hover:text-indigo-300"
+            <div className="flex flex-wrap gap-4">
+              <Button
+                size="lg"
+                asChild
+                className="bg-white text-primary hover:bg-white/90"
               >
-                Learn more <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
+                <Link href="/products">Shop Now</Link>
+              </Button>
+              <Button
+                size="lg"
+                asChild
+                className="bg-white text-primary hover:bg-white/90"
+              >
+                <Link href="/about">Learn More</Link>
+              </Button>
             </div>
           </div>
+        </div>
+        {/* Hero Background Image */}
+        <div className="absolute inset-0 z-0 opacity-30">
+          <Image
+            src="/images/hero.jpg"
+            alt="Phone cases and accessories"
+            fill
+            priority
+            className="object-cover"
+          />
         </div>
       </section>
 
       {/* Featured Products Section */}
-      <section className="bg-white py-16">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-center">
-            <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-              Featured Products
-            </h2>
-            <p className="mt-4 max-w-2xl text-center text-lg text-gray-600">
-              Check out our most popular cases and accessories
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="mb-10 text-center">
+            <h2 className="text-3xl font-bold mb-2">Featured Products</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Check out our most popular phone cases and accessories. Quality protection
+              with stunning designs for your device.
             </p>
           </div>
 
-          <div className="mt-12">
-            {isLoading ? (
-              <div className="grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-4">
-                {[...Array(4)].map((_, index) => (
-                  <div key={index} className="group relative animate-pulse">
-                    <div className="aspect-h-1 aspect-w-1 h-80 w-full overflow-hidden rounded-lg bg-gray-200" />
-                    <div className="mt-4 h-4 w-3/4 rounded bg-gray-200" />
-                    <div className="mt-2 h-4 w-1/2 rounded bg-gray-200" />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-4">
-                {featuredProducts.map((product) => (
-                  <div key={product.id} className="group relative">
-                    <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-lg bg-gray-200">
-                      {product.image_url ? (
-                        <Image
-                          src={product.image_url}
-                          alt={product.name}
-                          width={300}
-                          height={300}
-                          className="h-full w-full object-cover object-center transition-opacity group-hover:opacity-75"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-gray-100 text-gray-500">
-                          No image
-                        </div>
-                      )}
-                    </div>
-                    <div className="mt-4 flex justify-between">
-                      <div>
-                        <h3 className="text-sm font-medium text-gray-900">
-                          <Link href={`/product/${product.id}`}>
-                            <span aria-hidden="true" className="absolute inset-0" />
-                            {product.name}
-                          </Link>
-                        </h3>
-                        <p className="mt-1 text-sm text-gray-500">{product.category}</p>
-                      </div>
-                      <p className="text-sm font-medium text-gray-900">
-                        {formatPrice(product.price)}
-                      </p>
-                    </div>
-                    <div className="mt-4">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleAddToCart(product);
-                        }}
-                      >
-                        <ShoppingCart className="mr-2 h-4 w-4" />
-                        Add to Cart
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+          <ProductGrid
+            products={featuredProducts}
+            onAddToCart={handleAddToCart}
+            isLoading={isLoading}
+            emptyMessage="No featured products available yet. Check back soon!"
+          />
 
-            <div className="mt-12 text-center">
-              <Link href="/products">
-                <Button variant="outline" size="lg">
-                  View All Products
-                </Button>
-              </Link>
-            </div>
+          <div className="mt-12 text-center">
+            <Button asChild size="lg">
+              <Link href="/products">View All Products</Link>
+            </Button>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="bg-gray-50 py-16">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-center">
-            <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-              Why Choose Our Cases
-            </h2>
-            <p className="mt-4 max-w-2xl text-center text-lg text-gray-600">
-              Quality protection designed for your lifestyle
-            </p>
-          </div>
-
-          <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {[
-              {
-                title: 'Premium Protection',
-                description:
-                  'Our cases are engineered with military-grade materials to protect your phone from drops and impacts.',
-                icon: '🛡️',
-              },
-              {
-                title: 'Stylish Designs',
-                description:
-                  'Express your personality with our wide range of colors, patterns, and textures.',
-                icon: '🎨',
-              },
-              {
-                title: 'Perfect Fit',
-                description:
-                  'Each case is precisely designed for your specific phone model to ensure a perfect fit.',
-                icon: '✨',
-              },
-            ].map((feature, index) => (
-              <div
-                key={index}
-                className="rounded-lg border border-gray-200 bg-white p-8 shadow-sm transition-all hover:shadow-md"
-              >
-                <div className="mb-4 text-4xl">{feature.icon}</div>
-                <h3 className="text-xl font-bold text-gray-900">{feature.title}</h3>
-                <p className="mt-2 text-base text-gray-600">{feature.description}</p>
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center p-6 border border-gray-100 rounded-lg shadow-sm bg-white">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-primary">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z" />
+                </svg>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Newsletter Section */}
-      <section className="bg-indigo-600 py-16">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-center lg:flex-row lg:justify-between">
-            <div className="lg:w-2/5">
-              <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-                Join Our Newsletter
-              </h2>
-              <p className="mt-4 text-lg text-indigo-100">
-                Stay updated with our latest products, exclusive deals, and phone case tips.
+              <h3 className="text-xl font-bold mb-2">Premium Quality</h3>
+              <p className="text-gray-600">
+                Our cases are made with high-quality materials for maximum durability and protection.
               </p>
             </div>
-            <div className="mt-8 w-full lg:mt-0 lg:w-2/5">
-              <form className="flex flex-col sm:flex-row sm:gap-2">
-                <div className="flex-grow">
-                  <input
-                    type="email"
-                    placeholder="Enter your email"
-                    className="w-full rounded-md border-gray-300 px-4 py-3 focus:border-white focus:ring-white"
-                  />
-                </div>
-                <Button className="mt-3 sm:mt-0">Subscribe</Button>
-              </form>
-              <p className="mt-3 text-sm text-indigo-100">
-                We respect your privacy. Unsubscribe at any time.
+
+            <div className="text-center p-6 border border-gray-100 rounded-lg shadow-sm bg-white">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-primary">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold mb-2">Fast Shipping</h3>
+              <p className="text-gray-600">
+                Free shipping on all orders over $30. Delivery within 2-4 business days.
+              </p>
+            </div>
+
+            <div className="text-center p-6 border border-gray-100 rounded-lg shadow-sm bg-white">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-primary">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 0 0-3.7-3.7 48.678 48.678 0 0 0-7.324 0 4.006 4.006 0 0 0-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 0 0 3.7 3.7 48.656 48.656 0 0 0 7.324 0 4.006 4.006 0 0 0 3.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3-3 3" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold mb-2">Easy Returns</h3>
+              <p className="text-gray-600">
+                30-day return policy. Not satisfied? Return for a full refund, no questions asked.
               </p>
             </div>
           </div>
